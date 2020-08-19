@@ -2,9 +2,8 @@ all: run
 
 # compile + output Ink sources
 run:
-	september translate \
-		src/main.ink \
-		| tee /dev/stderr > static/ink/bundle.js
+	september translate src/lib.ink | tee /dev/stderr > static/ink/bundle.js
+	september translate src/main.ink | tee /dev/stderr >> static/ink/bundle.js
 
 # compile + output whenever Ink sources change
 watch:
