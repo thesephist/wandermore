@@ -84,12 +84,31 @@ physics := obj => (
 	obj.y := obj.y + dy
 
 	` friction `
-	frictiondPx := ~sign(obj.px) * FrictionCoeff * mass / FPS
-	abs(obj.px) > abs(frictiondPx) :: {
-		true -> obj.px := obj.px + frictiondPx
-		_ -> obj.px := 0
+	obj.y :: {
+		0 -> (
+			frictiondPx := sign(obj.px) * FrictionCoeff * mass / FPS
+			abs(obj.px) > abs(frictiondPx) :: {
+				true -> obj.px := obj.px - frictiondPx
+				_ -> obj.px := 0
+			}
+		)
 	}
 
+	` bouncing off walls `
+	obj.x < 0 :: {
+		true -> (
+			obj.x := 0
+			obj.px := ~0.9 * obj.px
+		)
+	}
+	obj.x > Width :: {
+		true -> (
+			obj.x := Width
+			obj.px := ~0.9 * obj.px
+		)
+	}
+
+	` gravity and the ground `
 	obj.y < 2 :: {
 		true -> abs(obj.py / mass) < 30 :: {
 			true -> (
@@ -107,7 +126,8 @@ physics := obj => (
 
 renderGround := () => drawLine([0, S.ground], [Width, S.ground])
 renderPlayer := () => (
-	strokeCircle(
+	setFill('#11b6a5')
+	fillCircle(
 		S.player.x
 		S.ground - S.player.y - S.player.size / 2
 		S.player.size / 2
@@ -122,6 +142,8 @@ main := () => (
 	renderGround()
 	renderPlayer()
 
+	setFont('32px sans-serif')
+	setFill('#000000')
 	writeText(30, 50, string(S.points))
 )
 
@@ -132,6 +154,5 @@ loop := () => (
 	requestAnimationFrame(loop)
 )
 
-setFont('32px sans-serif')
 loop()
 
