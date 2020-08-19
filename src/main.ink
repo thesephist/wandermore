@@ -1,13 +1,14 @@
 ` app main `
 
 ` game constants `
-G := ~20
+G := ~36
 FPS := 60
-FRICTION := 3
-FORCE := 2000
+FrictionCoeff := 300
+Launch := 100000
+Force := 1500
 
-MINSIZE := 16
-MAXSIZE := 512
+MinSize := 32
+MaxSize := 256
 
 ` Canvas setup `
 Width := window.innerWidth
@@ -25,8 +26,8 @@ S := {
 		size: 100
 		x: Width / 2
 		y: 0
-		vx: 0
-		vy: 0
+		px: 0
+		py: 0
 	}
 }
 
@@ -41,7 +42,7 @@ E := {
 ` events `
 on(window, 'keydown', evt => evt.key :: {
 	' ' -> S.player.y :: {
-		0 -> S.player.vy := S.player.vy + 800
+		0 -> S.player.py := S.player.py - Launch / FPS
 	}
 	'ArrowUp' -> E.UpPressed := true
 	'ArrowDown' -> E.DownPressed := true
@@ -58,39 +59,49 @@ on(window, 'keyup', evt => evt.key :: {
 })
 
 ` loop logic `
-physics := obj => (
+controls := () => (
 	E.UpPressed :: {
-		true -> S.player.size := min([S.player.size * 1.02, MAXSIZE])
+		true -> S.player.size := min([S.player.size * 1.02, MaxSize])
 	}
 	E.DownPressed :: {
-		true -> S.player.size := max([S.player.size / 1.02, MINSIZE])
+		true -> S.player.size := max([S.player.size / 1.02, MinSize])
 	}
-
-	` accel = force / mass `
-	accel :=
-		E.LeftPressed :: {
-		true -> S.player.vx := S.player.vx - FORCE / S.player.size
+	E.LeftPressed :: {
+		true -> S.player.px := S.player.px - Force / FPS
 	}
 	E.RightPressed :: {
-		true -> S.player.vx := S.player.vx + FORCE / S.player.size
+		true -> S.player.px := S.player.px + Force / FPS
+	}
+)
+
+physics := obj => (
+	mass := obj.size * obj.size / 10000
+
+	dx := obj.px / mass / FPS
+	dy := obj.py / mass / FPS
+
+	obj.x := obj.x + dx
+	obj.y := obj.y + dy
+
+	` friction `
+	frictiondPx := ~sign(obj.px) * FrictionCoeff * mass / FPS
+	abs(obj.px) > abs(frictiondPx) :: {
+		true -> obj.px := obj.px + frictiondPx
+		_ -> obj.px := 0
 	}
 
-	obj.x := obj.x + (obj.vx / FPS)
-	obj.y := obj.y + (obj.vy / FPS)
-	obj.vx := obj.vx - (obj.vx * FRICTION / FPS)
-	obj.vy := obj.vy + (G * S.player.size / FPS)
-
 	obj.y < 2 :: {
-		true -> abs(obj.vy) < 30 :: {
+		true -> abs(obj.py / mass) < 30 :: {
 			true -> (
 				obj.y := 0
-				obj.vy := 0
+				obj.py := 0
 			)
 			false -> (
 				obj.y := 0
-				obj.vy := ~(obj.vy * 0.3)
+				obj.py := ~0.3 * obj.py
 			)
 		}
+		_ -> obj.py := obj.py + G * mass
 	}
 )
 
@@ -105,6 +116,7 @@ renderPlayer := () => (
 
 ` per-frame main `
 main := () => (
+	controls()
 	physics(S.player)
 
 	renderGround()
@@ -122,6 +134,4 @@ loop := () => (
 
 setFont('32px sans-serif')
 loop()
-
-log('hello from the Ink side')
 
