@@ -98,9 +98,6 @@ strokeCircle := (x, y, r) => strokeArc(x, y, r, 0, Tau)
 fillCircle := (x, y, r) => fillArc(x, y, r, 0, Tau)
 
 ` text drawing `
-
 setFont := font => Ctx.font := font
 fillText := bind(Ctx, 'fillText')
-writeText := (x, y, text) => (
-	fillText(text, x, y)
-)
+writeText := (x, y, text) => fillText(text, x, y)

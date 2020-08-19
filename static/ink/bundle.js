@@ -42,7 +42,7 @@ strokeCircle = (x, y, r) => {return strokeArc(x, y, r, 0, Tau)};
 fillCircle = (x, y, r) => {return fillArc(x, y, r, 0, Tau)};
 setFont = font => {return (() => {let __ink_assgn_trgt = __as_ink_string(Ctx); __is_ink_string(__ink_assgn_trgt) ? __ink_assgn_trgt.assign(font, font) : (__ink_assgn_trgt.font) = font; return __ink_assgn_trgt})()};
 fillText = bind(Ctx, __Ink_String(`fillText`));
-writeText = (x, y, text) => (() => {return fillText(text, x, y)})()
+writeText = (x, y, text) => {return fillText(text, x, y)}
 G = __ink_negate(36);
 FPS = 60;
 FrictionCoeff = 300;
